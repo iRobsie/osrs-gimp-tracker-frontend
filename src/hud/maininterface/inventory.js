@@ -63,7 +63,7 @@ export class InterfaceItemSlot extends HudObject
         this.icon.setAnchor(0.5, 0.5);
         this.text.setAnchor(0, 0.5);
 
-        this.text.setPosition(100, 4);
+        this.text.setPosition(-18, 4);
         this.text.setParent(this.icon);
         this.icon.setParent(this);
 
