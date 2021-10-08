@@ -275,8 +275,6 @@ export class StageObject
 
             if(child.getScreenBounds().y < ret.y)
                 ret.y = child.getScreenBounds().y;
-			
-            ret = child.getBottomLeftScreen(ret, interactables);
         }
 
         // check hudobjects too
@@ -297,8 +295,9 @@ export class StageObject
                 ret.y = hudPos.y;
         }
 
-            ret = hudObject.getBottomLeftScreen(ret, interactables);
-        }
+        // keep looking deep for interactable children
+        for(var i = 0; i < this.children.length; i++)
+            ret = this.children[i].getBottomLeftScreen(ret, interactables);
 
         return ret;
     }
@@ -330,29 +329,33 @@ export class StageObject
 
             if(yPos > ret.y)
                 ret.y = yPos;
-			
-            ret = child.getTopRightScreen(ret, interactables);
         }
 
-       // check hudobjects too
-	@@ -341,21 +343,20 @@ export class StageObject
+        // check hudobjects too
+        for(var i = 0; i < this.hudObjects.length; i++)
+        {
+            var hudObject = this.hudObjects[i];
+            if(!hudObject.interactable && interactables)
+                continue;
+
             if(!hudObject.isVisible())
                 continue;
 
-            var hudBounds = hudObject.getScreenBounds();
+            var hudBounds = hudObject.getScreenRect(interactables);
             var pos = hudObject.getPosition();
 
-            var xPos = hudBounds.x + hudBounds.width;
-            var yPos = hudBounds.y + hudBounds.height;
+            var xPos = pos.x + hudBounds.width;
+            var yPos = pos.y + hudBounds.height;
 
             if(xPos > ret.x)
                 ret.x = xPos;
 
             if(yPos > ret.y)
                 ret.y = yPos;
-
-            ret = hudObject.getTopRightScreen(ret, interactables);
         }
+
+        for(var i = 0; i < this.children.length; i++)
+            ret = this.children[i].getTopRightScreen(ret, interactables);
 
         return ret;
     }
@@ -389,8 +392,6 @@ export class StageObject
 
             if(child.getWorldBounds().y < ret.y)
                 ret.y = child.getWorldBounds().y;
-			
-            ret = child.getBottomLeftWorld(ret, interactables, screen);
         }
 
         // check hudobjects too
@@ -409,9 +410,11 @@ export class StageObject
 
             if(worldBounds.y < ret.y)
                 ret.y = worldBounds.y;
-
-            ret = hudObject.getBottomLeftWorld(ret, interactables, screen);
         }
+
+        // keep looking deep for interactable children
+        for(var i = 0; i < this.children.length; i++)
+            ret = this.children[i].getBottomLeftWorld(ret, interactables, screen);
 
         return ret;
     }
@@ -444,8 +447,6 @@ export class StageObject
 
             if(yPos > ret.y)
                 ret.y = yPos;
-			
-            ret = child.getTopRightWorld(ret, interactables, screen);
         }
 
         // check hudobjects too
@@ -458,7 +459,7 @@ export class StageObject
             if(!hudObject.isVisible())
                 continue;
 
-			var bounds = hudObject.getWorldBounds();
+            var bounds = child.getWorldBounds();
             var xPos = bounds.x + bounds.width;
             var yPos = bounds.y + bounds.height;
 
@@ -467,8 +468,6 @@ export class StageObject
 
             if(yPos > ret.y)
                 ret.y = yPos;
-			
-            ret = hudObject.getTopRightWorld(ret, interactables, screen);
         }
 
         for(var i = 0; i < this.children.length; i++)
@@ -575,14 +574,7 @@ export class HudObject extends StageObject
 
         object.hudObjects.push(this);
     }
-	
-    updateAttachment(scaleOffset, offsetX, offsetY)
-    {
-        this.scaleOffset = scaleOffset;
-        this.offset.x = offsetX;
-        this.offset.y = offsetY;
-    }
-	
+
     detachFrom(object)
     {
         this.attachedTo = null;
